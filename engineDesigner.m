@@ -45,6 +45,10 @@ classdef engineDesigner
         p07
         pec
         Tec
+        Pr_b
+        Pr_ib
+        Pr_ab
+        T_max_ab
     end
     
     methods
@@ -216,10 +220,4 @@ classdef engineDesigner
             obj.Tec = obj.T07 * (1 - ad_eff_nc * (1 - (obj.pec / obj.p07)^(1 / cp_nc_n)));
         end
     end
-
-
-
-
-
-
 end
