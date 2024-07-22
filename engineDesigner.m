@@ -77,7 +77,7 @@ classdef engineDesigner
         end
         
         function obj = bypass_fan(obj)
-            MW = 0.0298; % Molecular weight of gas in fan (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in fan (kg/mol)
             gamma_ratio = 3.5; % cp/R or gamma/(gamma-1)
             poly_eff_f = 0.92; % Polytropic Efficiency of Fan
             
@@ -90,7 +90,7 @@ classdef engineDesigner
         end
         
         function obj = compressor(obj)
-            MW = 0.0298; % Molecular weight of gas in compressor (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in compressor (kg/mol)
             gamma_ratio = 3.62; % cp/R or gamma/(gamma-1)
             poly_eff_c = 0.91; % Polytropic Efficiency of Compressor
             
@@ -104,7 +104,7 @@ classdef engineDesigner
         
         function obj = combustor_main(obj)
             obj.Pr_b = 0.95;
-            MW = 0.0298; % Molecular weight of gas in combustor (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in combustor (kg/mol)
             eff_b = 0.99; % Efficiency of Main Combustor
             
             cp_b = (8.314 / MW) * (3.70 + 0.66 * ((obj.T03 / 1000)^2) - 0.20 * ((obj.T03 / 1000)^3));
@@ -115,7 +115,7 @@ classdef engineDesigner
         end
         
         function obj = turbine(obj)
-            MW = 0.0298; % Molecular weight of gas in turbine (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in turbine (kg/mol)
             poly_eff_t = 0.94; % Polytropic Efficiency of Turbine
             Tmax_0 = 1500;
             bmax = 0.1;
@@ -131,7 +131,7 @@ classdef engineDesigner
         end
         
         function obj = mixer_turbine(obj)
-            MW = 0.0298; % Molecular weight of gas in turbine (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in turbine (kg/mol)
             cp_tm_n = (3.43 + 0.72 * (obj.T051 / 1000)^2 - 0.21 * (obj.T051 / 1000)^3); % Normalized cp for turbine mixer (cp/R)
             
             obj.T051m = obj.T051 + obj.b * (obj.T03 - obj.T051) / (1 + obj.f);
@@ -140,7 +140,7 @@ classdef engineDesigner
         
         function obj = combustor_interturbine(obj)
             obj.Pr_ib = 0.94; % Interturbine Combustor Pressure Ratio
-            MW = 0.0298; % Molecular weight of gas in Interturbine Combustor (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in Interturbine Combustor (kg/mol)
             eff_ib = 0.99; % Efficiency of Interturbine Combustor
             
             cp_ib = (8.314 / MW) * (3.82 + 0.32 * (obj.T051m / 1000)^2 - 0.060 * (obj.T051m / 1000)^3);
@@ -152,7 +152,7 @@ classdef engineDesigner
         end
         
         function obj = turbine_fan(obj)
-            MW = 0.0298; % Molecular weight of gas in turbine (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in turbine (kg/mol)
             poly_eff_ft = 0.94; % Polytropic Efficiency of Turbine
             
             cp_ft = (8.314 / MW) * (3.40 + 0.63 * (obj.T0514 / 1000)^2 - 0.18 * (obj.T0514 / 1000)^3);
@@ -166,7 +166,7 @@ classdef engineDesigner
         
         function obj = combustor_afterburner(obj)
             obj.Pr_ab = 0.97; % Interturbine Combustor Pressure Ratio
-            MW = 0.0298; % Molecular weight of gas in Interturbine Combustor (kg/mol)
+            MW = 0.0289; % Molecular weight of gas in Interturbine Combustor (kg/mol)
             eff_ab = 0.96; % Efficiency of Interturbine Combustor
             
             cp_ab = (8.314 / MW) * (3.50 + 0.72 * (obj.T052 / 1000)^2 - 0.21 * (obj.T052 / 1000)^3);
