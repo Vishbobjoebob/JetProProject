@@ -1,4 +1,5 @@
 classdef engineDesigner
+
     properties
         % % Flight Conditions %%
         Ta % Ambient Temperature
@@ -49,6 +50,15 @@ classdef engineDesigner
         Pr_ib
         Pr_ab
         T_max_ab
+        f_max_main
+        f_max_ib
+        f_max_ab
+        ST_cn
+        TSFC_cn
+        nth_cn
+        n0_cn
+        np_cn
+        ST_sn
     end
     
     methods
@@ -110,12 +120,17 @@ classdef engineDesigner
             obj.Pr_b = 0.95;
             MW = 0.0289; % Molecular weight of gas in combustor (kg/mol)
             eff_b = 0.99; % Efficiency of Main Combustor
-            
+            Tmax_0 = 1500;
+            bmax = 0.1;
+            Cbl = 500;
+            n = 0.6;
             cp_b = (8.314 / MW) * (3.70 + 0.66 * ((obj.T03 / 1000)^2) - 0.20 * ((obj.T03 / 1000)^3));
             delta_hr = 43.52 * 10^6; % Heating Rate of Fuel (J/kg)
             
             obj.p04 = obj.Pr_b * obj.p03;
             obj.T04 = (obj.f * (eff_b * delta_hr / cp_b) + obj.T03 * (1 - obj.b)) / (1 - obj.b + obj.f);
+            obj.Tmax_t = Tmax_0 + Cbl * (obj.b / bmax)^n;
+            obj.f_max_main = ((1 - obj.b)* (obj.Tmax_t/obj.T03 - 1))/ ((eff_b*delta_hr)/(cp_b*obj.T03) - (obj.Tmax_t/obj.T03));
         end
         
         function obj = turbine(obj)
@@ -132,10 +147,10 @@ classdef engineDesigner
             ad_eff_t = (Tr_t - 1) / (Tr_t^(1 / poly_eff_t) - 1);
             obj.p051 = obj.p04 * (1 - 1 / ad_eff_t * (1 - Tr_t))^(cp_t / (8.314 / MW));
             obj.Tmax_t = Tmax_0 + Cbl * (obj.b / bmax)^n;
+             
         end
         
         function obj = mixer_turbine(obj)
-            MW = 0.0289; % Molecular weight of gas in turbine (kg/mol)
             cp_tm_n = (3.43 + 0.72 * (obj.T051 / 1000)^2 - 0.21 * (obj.T051 / 1000)^3); % Normalized cp for turbine mixer (cp/R)
             
             obj.T051m = obj.T051 + obj.b * (obj.T03 - obj.T051) / (1 + obj.f);
@@ -153,6 +168,7 @@ classdef engineDesigner
             obj.p0514 = obj.Pr_ib * obj.p051m;
             obj.T0514 = (obj.f_ib * (eff_ib * delta_hr / cp_ib) + (1 + obj.f) * obj.T051m) / (1 + obj.f + obj.f_ib);
             obj.T_max_ib = 1500;
+            obj.f_max_ib = ((1 + obj.f )* (obj.T_max_ib/obj.T051m - 1))/ ((eff_ib*delta_hr)/(cp_ib*obj.T051m) - (obj.T_max_ib/obj.T051m));
         end
         
         function obj = turbine_fan(obj)
@@ -179,6 +195,7 @@ classdef engineDesigner
             obj.p06 = obj.Pr_ab * obj.p052;
             obj.T06 = (obj.f_ab * (eff_ab * delta_hr / cp_ab) + (1 + obj.f + obj.f_ib) * obj.T052) / (1 + obj.f + obj.f_ib + obj.f_ab);
             obj.T_max_ab = 2300;
+            obj.f_max_ab = ((1 + obj.f + obj.f_ib)* (obj.T_max_ab/obj.T052 - 1))/ ((eff_ab*delta_hr)/(cp_ab*obj.T052) - (obj.T_max_ab/obj.T052));
         end
         
         function obj = nozzle_core(obj)
@@ -213,11 +230,37 @@ classdef engineDesigner
         end
         
         function obj = nozzle_combined(obj)
+            MW = 0.0289;
+
             ad_eff_nc = 0.96;
             cp_nc_n = 3.45 + 0.55 * (obj.T07 / 1000)^2 - 0.15 * (obj.T07 / 1000)^3; % Normalized cp for core nozzle (cp/R)
-            
+
             obj.pec = obj.pa;
             obj.Tec = obj.T07 * (1 - ad_eff_nc * (1 - (obj.pec / obj.p07)^(1 / cp_nc_n)));
+        end
+
+        function obj = get_performance_parameters_cn(obj)
+            delta_hr = 43.52*10^6;
+            C_b1 = 263;
+            MW = 0.0289;
+            u = obj.M*sqrt(1.4*(8.314/MW)*obj.Ta);
+            drag = C_b1*(obj.M^2)*(obj.pa/101.325)*(obj.beta^(1.5));
+
+            obj.ST_cn = ((1+ obj.beta+obj.f + obj.f_ib + obj.f_ab)*799.7- (1+obj.beta)*u-drag)/1000;
+            obj.TSFC_cn = ((obj.f + obj.f_ib + obj.f_ab)/obj.ST_cn)*3600;
+            obj.n0_cn = ((1/(obj.TSFC_cn/3600))*(u/delta_hr))*1000;
+            obj.np_cn = (2*obj.ST_cn*1000*u)/((1+obj.beta+obj.f+obj.f_ib+obj.f_ab)*799.7^2-(1+obj.beta)*u^2);
+            obj.nth_cn = obj.n0_cn/obj.np_cn;
+        end
+
+        function obj = get_performance_parameters_sn(obj)
+            delta_hr = 43.52*10^6;
+            C_b1 = 263;
+            MW = 0.0289;
+            u = obj.M*sqrt(1.4*(8.314/MW)*obj.Ta);
+            drag = C_b1*(obj.M^2)*(obj.pa/101.325)*(obj.beta^(1.5));
+
+            obj.ST_sn = ((1 + obj.f + obj.f_ib + obj.f_ab)*1143 - (1+obj.beta)*u+obj.beta*357.2-drag)/1000;
         end
     end
 end
