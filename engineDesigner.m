@@ -76,10 +76,10 @@ classdef engineDesigner
     end
     
     methods
-        function obj = engineDesigner(Ta, pa, M, Pr_c, Pr_f, beta, b, f, f_ib, f_ab)
-            obj.Ta = Ta;
-            obj.pa = pa;
-            obj.M = M;
+        function obj = engineDesigner(ambient, Pr_c, Pr_f, beta, b, f, f_ib, f_ab)
+            obj.Ta = ambient(1);
+            obj.pa = ambient(2);
+            obj.M = ambient(3);
             obj.Pr_c = Pr_c;
             obj.Pr_f = Pr_f;
             obj.beta = beta;
@@ -87,6 +87,23 @@ classdef engineDesigner
             obj.f = f;
             obj.f_ib = f_ib;
             obj.f_ab = f_ab;
+
+            obj = obj.diffuser();
+            obj = obj.bypass_fan();
+            obj = obj.compressor();
+            obj = obj.fuel_pump();
+            obj = obj.combustor_main();
+            obj = obj.turbine();
+            obj = obj.mixer_turbine();
+            obj = obj.combustor_interturbine();
+            obj = obj.turbine_fan();
+            obj = obj.combustor_afterburner();
+            obj = obj.nozzle_core();
+            obj = obj.nozzle_fan();
+            obj = obj.mixer_nozzle();
+            obj = obj.nozzle_combined();
+            obj = obj.get_performance_parameters_cn();
+            obj = obj.get_performance_parameters_sn();
         end
 
         
@@ -171,7 +188,7 @@ classdef engineDesigner
             MW = 0.0289; % Molecular weight of gas in turbine (kg/mol)
             poly_eff_t = 0.94; % Polytropic Efficiency of Turbine
 
-            obj.w_t = obj.w_c;
+            obj.w_t = obj.w_c+obj.w_p;
             
             cp_t = (8.314 / MW) * (3.38 + 0.70 * (obj.T04 / 1000)^2 - 0.20 * (obj.T04 / 1000)^3);
             obj.T051 = obj.T04 - obj.w_t / (cp_t * (1 - obj.b + obj.f));
@@ -314,5 +331,6 @@ classdef engineDesigner
             obj.np_sn = (2*obj.ST_sn*1000*u)/((1 + obj.f + obj.f_ib + obj.f_ab)*obj.ue^2 - (1+obj.beta)*u^2+obj.beta*obj.uef^2);
             obj.nth_sn = obj.n0_sn/obj.np_sn;
         end
+        
     end
 end
